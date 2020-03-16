@@ -81,6 +81,8 @@
 
         private Composite poiCoroutine;
 
+        private int DefaultWait = 4500;
+
         private DateTime startTime;
 
         [XmlElement("Collectables")]
@@ -669,7 +671,7 @@
         private async Task<bool> SpearFish()
         {
             return await InteractWithNode() && await PrepareRotation() && await ExecuteRotation()
-                   && await Coroutine.Wait(4000, () => !Node.CanGather) && await WaitForGatherWindowToClose();
+                   && await Coroutine.Wait(DefaultWait, () => !Node.CanGather) && await WaitForGatherWindowToClose();
         }
 
         private async Task<bool> InteractWithNode()
@@ -787,17 +789,32 @@
             StatusText = "SpearFishing items";
 
             int hits = 0;
-            bool veteranTrade = false;
-            bool identicalGig = false;
-            while (await Coroutine.Wait(4500, () => ActionManager.CanCast(7632, Core.Player) || !Node.IsValid))
+
+            // Precompute some character states per node
+            bool hasBountifulCatch = Actions.HasAction(Ability.BountifulCatch);
+
+            bool hasVeteranTrade = Actions.HasAction(Ability.VeteranTrade);
+            bool usedVeteranTrade = false;
+
+            bool hasIdenticalGig = Actions.HasAction(Ability.IdenticalGig);
+            bool usedIdenticalGig = false;
+
+            // Start spearfishing
+            while (await Coroutine.Wait(DefaultWait, () => Actions.CanCast(Ability.Gig) || !Node.IsValid))
             {
-                if (BountifulCatch && Core.Player.CurrentGP >= 200 && hits >= 1 && hits <= BountifulCatchDepth && (!BountifulCatchAfterVeteranTrade || veteranTrade))
+                if (BountifulCatch
+                    && hasBountifulCatch
+                    && (!BountifulCatchAfterVeteranTrade || usedVeteranTrade)
+                    && (1 <= hits && hits <= BountifulCatchDepth)
+                    && await Coroutine.Wait(DefaultWait, () => Actions.CanCast(Ability.BountifulCatch, 200, CostType.GPCost))
+                )
                 {
-                    await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.BountifulCatch]);
+                    Logger.Info(Localization.ExSpearFish_UsingBountifulCatch);
+                    await Cast(Ability.BountifulCatch);
                 }
 
-                await Coroutine.Sleep(4500);
-                await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.Gig]);
+                await Coroutine.Sleep(DefaultWait);
+                await Cast(Ability.Gig);
 
                 while (SelectYesno.IsOpen && Behaviors.ShouldContinue)
                 {
@@ -808,20 +825,31 @@
 
                 hits++;
                 Logger.Info(Localization.ExSpearFish_SpearFishing, SpearResult.FishName, SpearResult.IsHighQuality, SpearResult.Size, WorldManager.EorzaTime);
-                if (!veteranTrade && hits <= IdenticalGigDepth && !identicalGig && Items.Any(SpearResult.ShouldKeep) && Core.Player.CurrentGP >= 350 && await Coroutine.Wait(4000, () => ActionManager.CanCast(4591, Core.Player)))
+
+                // Prefer Identical Gig over Veteran Trade if player has it; able to collect more target fish this way
+                if (!usedIdenticalGig
+                    && hasIdenticalGig
+                    && hits <= IdenticalGigDepth
+                    && Items.Any(SpearResult.ShouldKeep)
+                    && await Coroutine.Wait(DefaultWait, () => Actions.CanCast(Ability.IdenticalGig, 350, CostType.GPCost))
+                )
                 {
                     Logger.Info(Localization.ExSpearFish_UsingIdenticalGig, SpearResult.FishName);
-                    await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.IdenticalGig]);
-                    veteranTrade = true;
+                    await Cast(Ability.IdenticalGig);
+                    usedIdenticalGig = true;
                 }
-                if (hits > VeteranTradeDepth || veteranTrade || Items.Any(SpearResult.ShouldKeep) || Core.Player.CurrentGP < 200 || !await Coroutine.Wait(4000, () => ActionManager.CanCast(7906, Core.Player)))
+                // If player doesn't have Identical Gig, fall back on Veteran Trade
+                else if (!usedVeteranTrade
+                    && (hasVeteranTrade && !hasIdenticalGig)
+                    && hits <= VeteranTradeDepth
+                    && !Items.Any(SpearResult.ShouldKeep)
+                    && await Coroutine.Wait(DefaultWait, () => Actions.CanCast(Ability.VeteranTrade, 200, CostType.GPCost))
+                )
                 {
-                    continue;
+                    Logger.Info(Localization.ExSpearFish_UsingVeteranTrade, SpearResult.FishName);
+                    await Cast(Ability.VeteranTrade);
+                    usedVeteranTrade = true;
                 }
-
-                Logger.Info(Localization.ExSpearFish_UsingVeteranTrade, SpearResult.FishName);
-                await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.VeteranTrade]);
-                veteranTrade = true;
             }
 
             StatusText = "SpearFishing items complete";
