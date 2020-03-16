@@ -152,25 +152,37 @@
             GpPerTick = CharacterResource.GetGpPerTick();
 
             if (Distance > 3.5f)
+            {
                 TreeRoot.Stop(Localization.ExGather_Distance);
+            }
 
             if (HotSpots != null)
+            {
                 HotSpots.IsCyclic = Loops < 1;
+            }
 
             // backwards compatibility
             if (GatherObjects == null && !string.IsNullOrWhiteSpace(GatherObject))
+            {
                 GatherObjects = new List<string> { GatherObject };
+            }
 
             startTime = DateTime.Now;
 
             if (Items == null)
+            {
                 Items = new NamedItemCollection();
+            }
 
             if (Collect && Collectables == null)
+            {
                 Collectables = new List<Collectable> { new Collectable { Name = string.Empty, Value = (int)CollectabilityValue } };
+            }
 
             if (string.IsNullOrWhiteSpace(Name))
+            {
                 Name = Items.Count > 0 ? Items.First().Name : string.Format(Localization.ExGather_Zone, WorldManager.ZoneId, ExProfileBehavior.Me.Location);
+            }
 
             StatusText = Name;
 
@@ -184,24 +196,32 @@
 #if RB_CN
             if (e.ChatLogEntry.MessageType == (MessageType)2115 && e.ChatLogEntry.Contents.Contains("获得了") ||
                 e.ChatLogEntry.MessageType == (MessageType)67 && e.ChatLogEntry.Contents.Contains("鱼逃走了"))
+            {
                 MatchSpearResult(e.ChatLogEntry.Contents);
+            }
 
             if (e.ChatLogEntry.MessageType == (MessageType)67 && e.ChatLogEntry.Contents.Contains("鱼影"))
+            {
                 MatchSwimmingShadow(e.ChatLogEntry.Contents);
+            }
 #else
-            if (e.ChatLogEntry.MessageType == (MessageType)2115 && e.ChatLogEntry.Contents.StartsWith("You spear") ||
-                e.ChatLogEntry.MessageType == (MessageType)67 && e.ChatLogEntry.Contents.StartsWith("The fish"))
+            if (e.ChatLogEntry.MessageType == (MessageType)2115 && e.ChatLogEntry.Contents.StartsWith("You spear")
+                || e.ChatLogEntry.MessageType == (MessageType)67 && e.ChatLogEntry.Contents.StartsWith("The fish"))
+            {
                 MatchSpearResult(e.ChatLogEntry.Contents);
+            }
 
             if (e.ChatLogEntry.MessageType == (MessageType)67 && e.ChatLogEntry.Contents.StartsWith("The shadow"))
+            {
                 MatchSwimmingShadow(e.ChatLogEntry.Contents);
+            }
 #endif
         }
 
         protected void MatchSpearResult(string message)
         {
-            var spearResult = new SpearResult();
-            var spearFishAwayMatch = SpearFishGetAwayRegex.Match(message);
+            SpearResult spearResult = new SpearResult();
+            Match spearFishAwayMatch = SpearFishGetAwayRegex.Match(message);
 #if RB_CN
             var spearFishSizeMatch = FishSizeRegex.Match(message);
             var spearFishMatch = SpearFishRegex.Matches(message);
@@ -211,21 +231,27 @@
                 spearResult.Name = spearFishMatch[1].ToString();
                 float.TryParse(spearFishSizeMatch.Groups[1].Value, out float size);
                 if (spearFishMatch[2].ToString() == "\uE03C")
+                {
                     spearResult.IsHighQuality = true;
+                }
 #else
-            var spearFishMatch = SpearFishRegex.Match(message);
+            Match spearFishMatch = SpearFishRegex.Match(message);
             if (spearFishMatch.Success)
             {
                 spearResult.Name = spearFishMatch.Groups[1].Value;
-                float.TryParse(spearFishMatch.Groups[2].Value, NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out var size);
+                float.TryParse(spearFishMatch.Groups[2].Value, NumberStyles.Number, CultureInfo.InvariantCulture.NumberFormat, out float size);
                 if (spearResult.Name[spearResult.Name.Length - 2] == ' ')
+                {
                     spearResult.IsHighQuality = true;
+                }
 #endif
                 spearResult.Size = size;
             }
 
             if (spearFishAwayMatch.Success)
+            {
                 spearResult.Name = "none";
+            }
 
             SpearResult = spearResult;
         }
@@ -237,7 +263,11 @@
 
         private static bool HandleDeath()
         {
-            if (!ExProfileBehavior.Me.IsDead || Poi.Current.Type == PoiType.Death) return false;
+            if (!ExProfileBehavior.Me.IsDead || Poi.Current.Type == PoiType.Death)
+            {
+                return false;
+            }
+
             Poi.Current = new Poi(ExProfileBehavior.Me, PoiType.Death);
             return true;
         }
@@ -245,10 +275,16 @@
         private bool HandleCondition()
         {
             if (WhileFunc == null)
+            {
                 WhileFunc = ScriptManager.GetCondition(While);
+            }
 
             // If statement is true, return false so we can continue the routine
-            if (WhileFunc() && !(GatherStrategy == GatherStrategy.FishAndGo && swimmingShadows)) return false;
+            if (WhileFunc() && !(GatherStrategy == GatherStrategy.FishAndGo && swimmingShadows))
+            {
+                return false;
+            }
+
             swimmingShadows = false;
             isDone = true;
             return true;
@@ -257,11 +293,15 @@
         private async Task<bool> CastTruth()
         {
             if (ExProfileBehavior.Me.CurrentJob != ClassJobType.Fisher)
+            {
                 return false;
+            }
 
             if (ExProfileBehavior.Me.ClassLevel < 66
                 || ExProfileBehavior.Me.HasAura((uint)AbilityAura.TruthOfOceans))
+            {
                 return false;
+            }
 
             return
                 await
@@ -273,11 +313,15 @@
         private async Task<bool> SelectGig()
         {
             if (ExProfileBehavior.Me.CurrentJob != ClassJobType.Fisher)
+            {
                 return false;
+            }
 
             if (ExProfileBehavior.Me.ClassLevel < 61
                 || gigSelected)
+            {
                 return false;
+            }
 
             gigSelected = await _gigWindow.SelectGiG(GigId);
 
@@ -288,7 +332,9 @@
         {
             if (Node == null ||
                 Node.IsValid && (!FreeRange || !(Node.Location.Distance3D(ExProfileBehavior.Me.Location) > Radius)))
+            {
                 return false;
+            }
 
             OnResetCachedDone();
             return true;
@@ -296,8 +342,12 @@
 
         private async Task<bool> MoveToHotSpot()
         {
-            if (HotSpots == null || HotSpots.CurrentOrDefault.WithinHotSpot2D(ExProfileBehavior.Me.Location)) return false;
-            var name = !string.IsNullOrWhiteSpace(HotSpots.CurrentOrDefault.Name)
+            if (HotSpots == null || HotSpots.CurrentOrDefault.WithinHotSpot2D(ExProfileBehavior.Me.Location))
+            {
+                return false;
+            }
+
+            string name = !string.IsNullOrWhiteSpace(HotSpots.CurrentOrDefault.Name)
                 ? "[" + HotSpots.CurrentOrDefault.Name + "] "
                 : string.Empty;
 
@@ -316,7 +366,9 @@
         private async Task<bool> FindNode(bool retryCenterHotspot = true)
         {
             if (Node != null)
+            {
                 return false;
+            }
 
             StatusText = Localization.ExGather_SearchForNodes;
 
@@ -328,18 +380,24 @@
                 if (GatherStrategy == GatherStrategy.TouchAndGo && HotSpots != null)
                 {
                     if (GatherObjects != null)
+                    {
                         nodes = nodes.Where(gpo => GatherObjects.Contains(gpo.EnglishName, StringComparer.InvariantCultureIgnoreCase));
+                    }
 
-                    foreach (var node in
+                    foreach (GatheringPointObject node in
                         nodes.Where(gpo => HotSpots.CurrentOrDefault.WithinHotSpot2D(gpo.Location))
                             .OrderBy(gpo => gpo.Location.Distance2D(ExProfileBehavior.Me.Location))
                             .Skip(1))
+                    {
                         if (!Blacklist.Contains(node.ObjectId, BlacklistFlags.Interact))
+                        {
                             Blacklist.Add(
                                 node,
                                 BlacklistFlags.Interact,
                                 TimeSpan.FromSeconds(18),
                                 Localization.ExGather_SkipFurthestNodes);
+                        }
+                    }
                 }
 
                 nodes = nodes.Where(gpo => !Blacklist.Contains(gpo.ObjectId, BlacklistFlags.Interact));
@@ -351,32 +409,38 @@
                 else
                 {
                     if (HotSpots != null)
+                    {
                         nodes = nodes.Where(gpo => HotSpots.CurrentOrDefault.WithinHotSpot2D(gpo.Location));
+                    }
                 }
 
                 // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
                 if (GatherObjects != null)
+                {
                     Node =
                         nodes.OrderBy(
                                 gpo =>
                                     GatherObjects.FindIndex(i => string.Equals(gpo.EnglishName, i, StringComparison.InvariantCultureIgnoreCase)))
                             .ThenBy(gpo => gpo.Location.Distance2D(ExProfileBehavior.Me.Location))
                             .FirstOrDefault(gpo => GatherObjects.Contains(gpo.EnglishName, StringComparer.InvariantCultureIgnoreCase));
+                }
                 else
+                {
                     Node = nodes.OrderBy(gpo => gpo.Location.Distance2D(ExProfileBehavior.Me.Location)).FirstOrDefault();
+                }
 
                 if (Node == null)
                 {
                     if (HotSpots != null)
                     {
-                        var myLocation = ExProfileBehavior.Me.Location;
+                        Vector3 myLocation = ExProfileBehavior.Me.Location;
 
-                        var distanceToFurthestVisibleGameObject =
+                        float distanceToFurthestVisibleGameObject =
                             GameObjectManager.GameObjects.Select(o => o.Location.Distance2D(myLocation))
                                 .OrderByDescending(o => o)
                                 .FirstOrDefault();
 
-                        var distanceToFurthestVectorInHotspot = myLocation.Distance2D(HotSpots.CurrentOrDefault)
+                        float distanceToFurthestVectorInHotspot = myLocation.Distance2D(HotSpots.CurrentOrDefault)
                                                                 + HotSpots.CurrentOrDefault.Radius;
 
                         if (myLocation.Distance2D(HotSpots.CurrentOrDefault) > Radius && GatherStrategy == GatherStrategy.GatherOrCollect
@@ -412,21 +476,22 @@
                     return true;
                 }
 
-                var entry = Blacklist.GetEntry(Node.ObjectId);
+                Blacklist.BlacklistEntry entry = Blacklist.GetEntry(Node.ObjectId);
                 if (entry != null && entry.Flags.HasFlag(BlacklistFlags.Interact))
                 {
                     Logger.Warn(Localization.ExGather_NodeBlacklist);
 
-                    if (await
-                            Coroutine.Wait(entry.Length,
-                                () => entry.IsFinished || Node.Location.Distance2D(ExProfileBehavior.Me.Location) > Radius)
-                        || Core.Player.IsDead)
+                    if (await Coroutine.Wait(entry.Length, () =>
+                            entry.IsFinished || Node.Location.Distance2D(ExProfileBehavior.Me.Location) > Radius) || Core.Player.IsDead
+                    )
+                    {
                         if (!entry.IsFinished)
                         {
                             Node = null;
                             Logger.Info(Localization.ExGather_NodeReset);
                             return false;
                         }
+                    }
 
                     Logger.Info(Localization.ExGather_NodeBlacklistRemoved);
                 }
@@ -434,10 +499,14 @@
                 Logger.Info(Localization.ExGather_NodeSet + Node);
 
                 if (HotSpots == null)
+                {
                     MovementManager.SetFacing2D(Node.Location);
+                }
 
                 if (Poi.Current.Unit != Node)
+                {
                     Poi.Current = new Poi(Node, PoiType.Gather);
+                }
 
                 return true;
             }
@@ -448,11 +517,14 @@
         private async Task<bool> ChangeHotSpot()
         {
             if (SpawnTimeout > 0 && DateTime.Now < startTime.AddSeconds(SpawnTimeout))
+            {
                 return false;
+            }
 
             startTime = DateTime.Now;
 
             if (HotSpots != null)
+            {
                 if (!HotSpots.Next())
                 {
                     Logger.Info(Localization.ExGather_FinishedLoop, ++loopCount, Loops);
@@ -466,8 +538,11 @@
 
                     // If not cyclic and it is on the last index
                     if (!HotSpots.IsCyclic && HotSpots.Index == HotSpots.Count - 1)
+                    {
                         HotSpots.Index = 0;
+                    }
                 }
+            }
 
             await Coroutine.Wait(2000, () => !Window<Gathering>.IsOpen && !GatheringMasterpiece.IsOpen);
 
@@ -477,7 +552,9 @@
         private bool FreeRangeConditional()
         {
             if (freeRangeConditionFunc == null)
+            {
                 freeRangeConditionFunc = ScriptManager.GetCondition(FreeRangeCondition);
+            }
 
             return freeRangeConditionFunc();
         }
@@ -485,8 +562,10 @@
         private async Task<bool> ResetOrDone()
         {
             while (ExProfileBehavior.Me.InCombat && Behaviors.ShouldContinue)
+            {
                 // TODO: Run away...far far away
                 await Coroutine.Yield();
+            }
 
             ResetInternal();
 
@@ -496,15 +575,21 @@
         private async Task<bool> ExecutePoiLogic()
         {
             if (Poi.Current.Type != PoiType.Gather)
+            {
                 return false;
+            }
 
-            var result = FindGatherSpot() || await GatherSequence();
+            bool result = FindGatherSpot() || await GatherSequence();
 
             if (!result)
+            {
                 Poi.Clear(Localization.ExGather_ExecutePoiLogic);
+            }
 
             if (Poi.Current.Type == PoiType.Gather && (!Poi.Current.Unit.IsValid || !Poi.Current.Unit.IsVisible))
+            {
                 Poi.Clear(Localization.ExGather_NodeIsGone);
+            }
 
             return result;
         }
@@ -512,12 +597,16 @@
         private bool FindGatherSpot()
         {
             if (GatherSpot != null)
+            {
                 return false;
+            }
 
             if (GatherSpots != null && Node.Location.Distance3D(ExProfileBehavior.Me.Location) > Distance)
+            {
                 GatherSpot =
                     GatherSpots.OrderBy(gs => gs.NodeLocation.Distance3D(Node.Location))
                         .FirstOrDefault(gs => gs.NodeLocation.Distance3D(Node.Location) <= Distance);
+            }
 
             // Either GatherSpots is null, the node is already in range, or there are no matches, use fallback
             if (GatherSpot == null)
@@ -557,16 +646,21 @@
 
         private async Task<bool> MoveToGatherSpot()
         {
-            var distance = Poi.Current.Location.Distance3D(ExProfileBehavior.Me.Location);
+            float distance = Poi.Current.Location.Distance3D(ExProfileBehavior.Me.Location);
             if (FreeRange)
+            {
                 while (distance > Distance && distance <= Radius && Behaviors.ShouldContinue)
                 {
                     await Coroutine.Yield();
                     distance = Poi.Current.Location.Distance3D(ExProfileBehavior.Me.Location);
                 }
+            }
 
             if (distance <= Distance)
+            {
                 return true;
+            }
+
             await GatherSpot.MoveToSpot(this);
 
             return false;
@@ -582,18 +676,22 @@
         {
             StatusText = "Interacting with node";
 
-            var attempts = 0;
+            int attempts = 0;
             while (attempts++ < 5 && !CanDoAbility(Ability.Gig) && Behaviors.ShouldContinue && Poi.Current.Unit.IsVisible
                    && Poi.Current.Unit.IsValid)
             {
-                var ticks = 0;
+                int ticks = 0;
                 while (MovementManager.IsFlying && !MovementManager.IsDiving && ticks++ < 5 && Behaviors.ShouldContinue && Poi.Current.Unit.IsVisible
                        && Poi.Current.Unit.IsValid)
                 {
-                    var ground = ExProfileBehavior.Me.Location.GetFloor(5);
+                    Vector3 ground = ExProfileBehavior.Me.Location.GetFloor(5);
                     if (Math.Abs(ground.Y - ExProfileBehavior.Me.Location.Y) > float.Epsilon)
+                    {
                         if (Navigator.PlayerMover is IFlightEnabledPlayerMover mover && !mover.IsLanding && !mover.IsTakingOff)
+                        {
                             await CommonTasks.DescendTo(ground.Y);
+                        }
+                    }
 
                     await Coroutine.Sleep(200);
                 }
@@ -601,10 +699,14 @@
                 Poi.Current.Unit.Interact();
 
                 if (await Coroutine.Wait(WindowDelay, () => CanDoAbility(Ability.Gig)))
+                {
                     break;
+                }
 
                 if (attempts == 1 && WindowDelay <= 3000 && await Coroutine.Wait(WindowDelay, () => CanDoAbility(Ability.Gig)))
+                {
                     break;
+                }
 
                 if (FreeRange)
                 {
@@ -621,7 +723,9 @@
             if (!CanDoAbility(Ability.Gig))
             {
                 if (!FreeRange)
+                {
                     await MoveFromGatherSpot();
+                }
 
                 OnResetCachedDone();
                 return false;
@@ -644,10 +748,16 @@
         private void BlacklistCurrentNode()
         {
             if (Poi.Current.Type != PoiType.Gather)
+            {
                 return;
+            }
 
-            if (Blacklist.Contains(Poi.Current.Unit, BlacklistFlags.Interact)) return;
-            var timeToBlacklist = TimeSpan.FromSeconds(60);
+            if (Blacklist.Contains(Poi.Current.Unit, BlacklistFlags.Interact))
+            {
+                return;
+            }
+
+            TimeSpan timeToBlacklist = TimeSpan.FromSeconds(60);
             Blacklist.Add(
                 Poi.Current.Unit,
                 BlacklistFlags.Interact,
@@ -664,7 +774,9 @@
             else
             {
                 if (Core.Player.HasAura((int)AbilityAura.CollectorsGlove))
+                {
                     return await Cast(Ability.CollectorsGlove);
+                }
             }
 
             return true;
@@ -674,19 +786,23 @@
         {
             StatusText = "SpearFishing items";
 
-            var hits = 0;
-            var veteranTrade = false;
-            var identicalGig = false;
+            int hits = 0;
+            bool veteranTrade = false;
+            bool identicalGig = false;
             while (await Coroutine.Wait(4500, () => ActionManager.CanCast(7632, Core.Player) || !Node.IsValid))
             {
                 if (BountifulCatch && Core.Player.CurrentGP >= 200 && hits >= 1 && hits <= BountifulCatchDepth && (!BountifulCatchAfterVeteranTrade || veteranTrade))
+                {
                     await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.BountifulCatch]);
+                }
 
                 await Coroutine.Sleep(4500);
                 await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.Gig]);
 
-                while (SelectYesNoItem.IsOpen && Behaviors.ShouldContinue)
+                while (SelectYesno.IsOpen && Behaviors.ShouldContinue)
+                {
                     await HandleCollectable();
+                }
 
                 await Coroutine.Sleep(1000);
 
@@ -698,7 +814,11 @@
                     await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.IdenticalGig]);
                     veteranTrade = true;
                 }
-                if (hits > VeteranTradeDepth || veteranTrade || Items.Any(SpearResult.ShouldKeep) || Core.Player.CurrentGP < 200 || !await Coroutine.Wait(4000, () => ActionManager.CanCast(7906, Core.Player))) continue;
+                if (hits > VeteranTradeDepth || veteranTrade || Items.Any(SpearResult.ShouldKeep) || Core.Player.CurrentGP < 200 || !await Coroutine.Wait(4000, () => ActionManager.CanCast(7906, Core.Player)))
+                {
+                    continue;
+                }
+
                 Logger.Info(Localization.ExSpearFish_UsingVeteranTrade, SpearResult.FishName);
                 await Cast(Abilities.Map[Core.Player.CurrentJob][Ability.VeteranTrade]);
                 veteranTrade = true;
@@ -711,52 +831,56 @@
 
         private async Task<bool> HandleCollectable()
         {
-            var required = CollectabilityValue;
-            var itemName = string.Empty;
+            uint required = CollectabilityValue;
+            string itemName = string.Empty;
             if (!string.IsNullOrWhiteSpace(Collectables.First().Name))
             {
-                var item = SelectYesNoItem.Item;
+                Item item = SelectYesno.Item;
                 if (item == null
                     || !Collectables.Any(c => string.Equals(c.Name, item.EnglishName, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    var ticks = 0;
+                    int ticks = 0;
                     while ((item == null
                             ||
                             !Collectables.Any(c => string.Equals(c.Name, item.EnglishName, StringComparison.InvariantCultureIgnoreCase)))
                            && ticks++ < 60 && Behaviors.ShouldContinue)
                     {
-                        item = SelectYesNoItem.Item;
+                        item = SelectYesno.Item;
                         await Coroutine.Yield();
                     }
 
                     if (ticks > 60)
+                    {
                         required = (uint)Collectables.Select(c => c.Value).Max();
+                    }
                 }
 
                 if (item != null)
                 {
                     itemName = item.EnglishName;
-                    var collectable = Collectables.FirstOrDefault(c => string.Equals(c.Name, item.EnglishName));
+                    Collectable collectable = Collectables.FirstOrDefault(c => string.Equals(c.Name, item.EnglishName));
 
                     if (collectable != null)
+                    {
                         required = (uint)collectable.Value;
+                    }
                 }
             }
 
-            var value = SelectYesNoItem.CollectabilityValue;
+            uint value = SelectYesno.CollectabilityValue;
 
             if (value >= required)
             {
                 Logger.Info(Localization.ExFish_Collecting, itemName, value, required);
-                SelectYesNoItem.Yes();
+                SelectYesno.Yes();
             }
             else
             {
                 Logger.Info(Localization.ExFish_Declining, itemName, value, required);
-                SelectYesNoItem.No();
+                SelectYesno.No();
             }
 
-            await Coroutine.Wait(3000, () => !SelectYesNoItem.IsOpen);
+            await Coroutine.Wait(3000, () => !SelectYesno.IsOpen);
 
             return true;
         }
@@ -766,7 +890,9 @@
         private async Task<bool> HandleCordial()
         {
             if (CordialType == CordialType.None)
+            {
                 return false;
+            }
 
             CordialSpellData = CordialSpellData ?? Cordial.GetSpellData();
 
@@ -777,21 +903,34 @@
             }
 
             if (!CanUseCordial(8))
+            {
                 return false;
+            }
 
-            var missingGp = ExProfileBehavior.Me.MaxGP - ExProfileBehavior.Me.CurrentGP;
+            int missingGp = ExProfileBehavior.Me.MaxGP - ExProfileBehavior.Me.CurrentGP;
 
             if (missingGp < 300)
+            {
                 return false;
+            }
 
             if (missingGp >= 450 && (CordialType == CordialType.HiCordial || CordialType == CordialType.Auto))
+            {
                 if (await UseCordial(CordialType.HiCordial))
+                {
                     return true;
+                }
+            }
 
-            if (missingGp < 400 || CordialType != CordialType.Cordial && CordialType != CordialType.Auto) return await UseCordial(CordialType.WateredCordial);
+            if (missingGp < 400 || CordialType != CordialType.Cordial && CordialType != CordialType.Auto)
+            {
+                return await UseCordial(CordialType.WateredCordial);
+            }
 
             if (await UseCordial(CordialType.Cordial))
+            {
                 return true;
+            }
 
             return await UseCordial(CordialType.WateredCordial);
         }
@@ -806,8 +945,12 @@
 
         private async Task<bool> UseCordial(CordialType cordialType, int maxTimeoutSeconds = 5)
         {
-            if (!(CordialSpellData.Cooldown.TotalSeconds < maxTimeoutSeconds)) return false;
-            var cordial = InventoryManager.FilledSlots.FirstOrDefault(slot => slot.RawItemId == (uint)cordialType);
+            if (!(CordialSpellData.Cooldown.TotalSeconds < maxTimeoutSeconds))
+            {
+                return false;
+            }
+
+            BagSlot cordial = InventoryManager.FilledSlots.FirstOrDefault(slot => slot.RawItemId == (uint)cordialType);
 
             if (cordial != null)
             {
@@ -822,10 +965,18 @@
                     TimeSpan.FromSeconds(maxTimeoutSeconds),
                     () =>
                     {
-                        if (!ExProfileBehavior.Me.IsMounted || !(CordialSpellData.Cooldown.TotalSeconds < 2)) return cordial.CanUse(ExProfileBehavior.Me);
+                        if (!ExProfileBehavior.Me.IsMounted || !(CordialSpellData.Cooldown.TotalSeconds < 2))
+                        {
+                            return cordial.CanUse(ExProfileBehavior.Me);
+                        }
+
                         ActionManager.Dismount();
                         return false;
-                    })) return false;
+                    }))
+                {
+                    return false;
+                }
+
                 await Coroutine.Sleep(500);
                 Logger.Info("Using " + cordialType);
                 cordial.UseItem(ExProfileBehavior.Me);
@@ -839,9 +990,11 @@
 
         private async Task<bool> WaitForGatherWindowToClose()
         {
-            var ticks = 0;
+            int ticks = 0;
             while (CanDoAbility(Ability.Gig) && ticks++ < 100 && Behaviors.ShouldContinue)
+            {
                 await Coroutine.Yield();
+            }
 
             return true;
         }
