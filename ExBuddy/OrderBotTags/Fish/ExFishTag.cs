@@ -275,7 +275,7 @@ namespace ExBuddy.OrderBotTags.Fish
 				var opened = await Coroutine.Wait(5000, () => SelectYesno.IsOpen);
 				if (!opened)
 				{
-					Logger.Info("SelectYesNoItem never appeared");
+					Logger.Info("SelectYesNo never appeared");
 					return false;
 				}
 			}
