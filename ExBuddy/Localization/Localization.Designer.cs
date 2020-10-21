@@ -1222,6 +1222,15 @@ namespace ExBuddy.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Using Bountiful Catch..
+        /// </summary>
+        internal static string ExSpearFish_UsingBountifulCatch {
+            get {
+                return ResourceManager.GetString("ExSpearFish_UsingBountifulCatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Using Identical Gig on {0}..
         /// </summary>
         internal static string ExSpearFish_UsingIdenticalGig {

@@ -1151,10 +1151,10 @@ namespace ExBuddy.OrderBotTags.Fish
 			ResetMooch();
 		}
 
-		protected virtual void FaceFishSpot()
+		protected virtual async void FaceFishSpot()
 		{
 			var i = MathEx.Random(0, 25);
-			i = i / 100;
+			i /= 100;
 
 			var i2 = MathEx.Random(0, 100);
 
@@ -1165,6 +1165,17 @@ namespace ExBuddy.OrderBotTags.Fish
 			else
 			{
 				ExProfileBehavior.Me.SetFacing(FishSpots.Current.Heading + (float)i);
+			}
+
+			if (!Actions.CanCast(Ability.Cast))
+			{
+				float facing = Core.Me.Heading;
+				float maxFacing = (float) (facing + (2 * Math.PI));
+				while (facing < maxFacing && !await Coroutine.Wait(25,() => Actions.CanCast(Ability.Cast)))
+				{
+					facing += 0.15f;
+					ExProfileBehavior.Me.SetFacing(facing);
+				}
 			}
 		}
 
