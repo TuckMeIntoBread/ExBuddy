@@ -450,68 +450,26 @@ namespace ExBuddy.OrderBotTags.Fish
 
 		#region Aura Properties
 
-		protected bool HasPatience
-		{
-			get
-			{
-				// Gathering Fortune Up (Fishing)
-				return ExProfileBehavior.Me.HasAura(850);
-			}
-		}
+		// Gathering Fortune Up (Fishing)
+		protected bool HasPatience => ExProfileBehavior.Me.HasAura(850);
 
-		protected bool HasSnagging
-		{
-			get
-			{
-				// Snagging
-				return ExProfileBehavior.Me.HasAura(761);
-			}
-		}
+		// Snagging
+		protected bool HasSnagging => ExProfileBehavior.Me.HasAura(761);
 
-		protected bool HasCollectorsGlove
-		{
-			get
-			{
-				// Collector's Glove
-				return ExProfileBehavior.Me.HasAura(805);
-			}
-		}
+		// Collector's Glove
+		protected bool HasCollectorsGlove => ExProfileBehavior.Me.HasAura(805);
 
-		protected bool HasChum
-		{
-			get
-			{
-				// Chum
-				return ExProfileBehavior.Me.HasAura(763);
-			}
-		}
+		// Chum
+		protected bool HasChum => ExProfileBehavior.Me.HasAura(763);
 
-		protected bool HasFishEyes
-		{
-			get
-			{
-				// Fish Eyes
-				return ExProfileBehavior.Me.HasAura(762);
-			}
-		}
-		
-		protected bool HasIdenticalCast
-		{
-			get
-			{
-				// Identical Cast
-				return ExProfileBehavior.Me.HasAura(1804);
-			}
-		}
-		
-		protected bool HasSurfaceSlap
-		{
-			get
-			{
-				// Surface Slap
-				return ExProfileBehavior.Me.HasAura(1803);
-			}
-		}
+		// Fish Eyes
+		protected bool HasFishEyes => ExProfileBehavior.Me.HasAura(762);
+
+		// Identical Cast
+		protected bool HasIdenticalCast => ExProfileBehavior.Me.HasAura(1804);
+
+		// Surface Slap
+		protected bool HasSurfaceSlap => ExProfileBehavior.Me.HasAura(1803);
 
 		#endregion Aura Properties
 
@@ -684,20 +642,14 @@ namespace ExBuddy.OrderBotTags.Fish
 			return distance <= radius || !ConditionCheck() || ExProfileBehavior.Me.IsDead;
 		}
 
-		private bool HasSpecifiedBait
-		{
-			get { return Fish.Bait.FindMatch(Baits).BaitItem.ItemCount() > 0; }
-		}
+		private bool HasSpecifiedBait => Fish.Bait.FindMatch(Baits).BaitItem.ItemCount() > 0;
 
 		private bool IsBaitSpecified
 		{
 			get { return Baits != null && Baits.Count > 0; }
 		}
 
-		private bool IsCorrectBaitSelected
-		{
-			get { return Fish.Bait.FindMatch(Baits).BaitItem.Id == FishingManager.SelectedBaitItemId; }
-		}
+		private bool IsCorrectBaitSelected => Fish.Bait.FindMatch(Baits).BaitItem.Id == FishingManager.SelectedBaitItemId;
 
 		#endregion Private Properties
 
