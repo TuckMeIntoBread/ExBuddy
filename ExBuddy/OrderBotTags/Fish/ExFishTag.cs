@@ -216,7 +216,7 @@ namespace ExBuddy.OrderBotTags.Fish
 
 		internal bool CanUseCordial(ushort withinSeconds = 5)
 		{
-			return CordialSpellData.Cooldown.TotalSeconds < withinSeconds && !HasChum && !HasPatience && !HasFishEyes
+			return CordialSpellData.Cooldown.TotalSeconds < withinSeconds && !HasChum && !HasPatience && !HasFishEyes && !HasIdenticalCast && !HasSurfaceSlap
 				   && ((CordialType == CordialType.WateredCordial && Cordial.HasWateredCordials())
 				   || (CordialType == CordialType.Cordial && (Cordial.HasWateredCordials() || Cordial.HasCordials()))
 				   || ((CordialType == CordialType.HiCordial || CordialType == CordialType.Auto) && Cordial.HasAnyCordials()));
@@ -492,6 +492,24 @@ namespace ExBuddy.OrderBotTags.Fish
 			{
 				// Fish Eyes
 				return ExProfileBehavior.Me.HasAura(762);
+			}
+		}
+		
+		protected bool HasIdenticalCast
+		{
+			get
+			{
+				// Identical Cast
+				return ExProfileBehavior.Me.HasAura(1804);
+			}
+		}
+		
+		protected bool HasSurfaceSlap
+		{
+			get
+			{
+				// Surface Slap
+				return ExProfileBehavior.Me.HasAura(1803);
 			}
 		}
 

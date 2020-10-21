@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace
 
 using ExBuddy.Helpers;
 
@@ -38,7 +38,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
                 while (index < retainerCount)
                 {
                     Log("Checking Retainer n° " + (index + 1));
-                    await Coroutine.Sleep(200);
+                    await Coroutine.Sleep(300);
                     // Select retainer
                     await retainerList.SelectRetainerAndSkipDialog(index);
                     await Coroutine.Wait(5000, () => SelectString.IsOpen);
@@ -73,8 +73,8 @@ namespace ExBuddy.OrderBotTags.Behaviors
                     index++;
                 }
                 Log("No more Retainer to check");
-                await retainerList.Refresh(200);
-                await retainerList.CloseInstanceGently();
+                if (!retainerList.IsValid) await retainerList.Refresh(1000);
+                await retainerList.CloseInstance(300);
                 return isDone = true;
             }
         }
