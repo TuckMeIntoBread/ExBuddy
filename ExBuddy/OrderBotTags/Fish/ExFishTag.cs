@@ -269,10 +269,10 @@ namespace ExBuddy.OrderBotTags.Fish
 				return false;
 			}
 
-			if (!SelectYesNoItem.IsOpen)
+			if (!SelectYesno.IsOpen)
 			{
 				//Wait a few seconds
-				var opened = await Coroutine.Wait(5000, () => SelectYesNoItem.IsOpen);
+				var opened = await Coroutine.Wait(5000, () => SelectYesno.IsOpen);
 				if (!opened)
 				{
 					Logger.Info("SelectYesNoItem never appeared");
@@ -284,7 +284,7 @@ namespace ExBuddy.OrderBotTags.Fish
 			var itemName = string.Empty;
 			if (!string.IsNullOrWhiteSpace(Collectables.First().Name))
 			{
-				var item = SelectYesNoItem.Item;
+				var item = SelectYesno.Item;
 				if (item == null
 					|| !Collectables.Any(c => string.Equals(c.Name, item.EnglishName, StringComparison.InvariantCultureIgnoreCase)))
 				{
@@ -294,7 +294,7 @@ namespace ExBuddy.OrderBotTags.Fish
 							!Collectables.Any(c => string.Equals(c.Name, item.EnglishName, StringComparison.InvariantCultureIgnoreCase)))
 						   && ticks++ < 60 && Behaviors.ShouldContinue)
 					{
-						item = SelectYesNoItem.Item;
+						item = SelectYesno.Item;
 						await Coroutine.Yield();
 					}
 
@@ -320,20 +320,20 @@ namespace ExBuddy.OrderBotTags.Fish
 
 			// handle
 
-			var value = SelectYesNoItem.CollectabilityValue;
+			var value = SelectYesno.CollectabilityValue;
 
 			if (value >= required)
 			{
 				Logger.Info(Localization.Localization.ExFish_Collecting, itemName, value, required);
-				SelectYesNoItem.Yes();
+				SelectYesno.Yes();
 			}
 			else
 			{
 				Logger.Info(Localization.Localization.ExFish_Declining, itemName, value, required);
-				SelectYesNoItem.No();
+				SelectYesno.No();
 			}
 
-			await Coroutine.Wait(3000, () => !SelectYesNoItem.IsOpen && FishingManager.State != FishingState.Waitin);
+			await Coroutine.Wait(3000, () => !SelectYesno.IsOpen && FishingManager.State != FishingState.Waitin);
 
 			return true;
 		}
@@ -716,7 +716,7 @@ namespace ExBuddy.OrderBotTags.Fish
 					new Decorator(
 						ret =>
 							fishcount >= fishlimit && !HasPatience && CanDoAbility(Ability.Quit)
-							&& FishingManager.State == FishingState.PoleReady && !SelectYesNoItem.IsOpen,
+							&& FishingManager.State == FishingState.PoleReady && !SelectYesno.IsOpen,
 						new Sequence(
 							new Sleep(2, 3),
 							new Action(r => { DoAbility(Ability.Quit); }),
