@@ -1,14 +1,14 @@
 ﻿namespace ExBuddy.OrderBotTags.Gather.Rotations
 {
-    using Buddy.Coroutines;
     using Attributes;
+    using Buddy.Coroutines;
     using Enumerations;
     using ff14bot;
     using ff14bot.Managers;
     using Helpers;
     using Interfaces;
-    using System.Threading.Tasks;
     using System;
+    using System.Threading.Tasks;
 
     //Name, RequiredTime, RequiredGpBreakpoints
     [GatheringRotation("BreadsYieldAndQuality", 25, 800, 775, 675, 575, 475, 375, 0)]
@@ -20,12 +20,7 @@
 
         int IGetOverridePriority.GetOverridePriority(ExGatherTag tag)
         {
-            if (tag.CollectableItem != null)
-            {
-                return -1;
-            }
-
-            if (tag.GatherItem != null && tag.GatherItem.HqChance < 1)
+            if (tag.CollectableItem != null || tag.GatherItem != null && tag.GatherItem.HqChance < 1 || !tag.Node.IsUnspoiled())
             {
                 return -1;
             }
@@ -48,24 +43,6 @@
 
         public override async Task<bool> ExecuteRotation(ExGatherTag tag)
         {
-            if (!tag.Node.IsUnspoiled())
-            {
-                if (!(GatheringManager.SwingsRemaining > 4 && Core.Player.CurrentGP >= 300 && level >= 63) || tag.GatherItem.HqChance >= 100) return true;
-                if (tag.GatherItem.HqChance >= 90)
-                {
-                    await tag.Cast(Ability.IncreaseGatherQuality10);
-                    await Wait();
-                }
-                else
-                {
-                    await tag.Cast(Ability.IncreaseGatherQuality30100);
-                    await Wait();
-                }
-                await IncreaseChance(tag);
-                await Wait();
-                return true;
-            }
-
             if (Core.Player.CurrentGP >= 300 && level >= 63 && tag.GatherItem.HqChance < 100)
             {
                 if (tag.GatherItem.HqChance >= 90)
@@ -84,7 +61,7 @@
             }
 
             double YieldsLeft()
-            { 
+            {
                 return Math.Min(GatheringManager.SwingsRemaining, Math.Max(0, (Core.Player.CurrentGP + GatheringManager.SwingsRemaining * 5) / 100));
             }
 
@@ -120,14 +97,14 @@
                     await Wait();
                 }
 
-                double counsels = Math.Floor(YieldsLeft() + 0.1);
+                //double counsels = Math.Floor(YieldsLeft() + 0.1);
 
-                if (Core.Player.CurrentGP >= 10 && level >= 67 && tag.GatherItem.HqChance > 0 && tag.GatherItem.HqChance < 100 && YieldsLeft() >= counsels && !Core.Player.HasAura(1262))
-                {
-                    await tag.Cast(Ability.IncreaseGatherQualityRandomOnce);
-                    await Coroutine.Wait(2000, () => Core.Player.HasAura(1262));
-                    await Wait();
-                }
+                //if (Core.Player.CurrentGP >= 10 && level >= 67 && tag.GatherItem.HqChance > 0 && tag.GatherItem.HqChance < 100 && YieldsLeft() >= counsels && !Core.Player.HasAura(1262))
+                //{
+                //    await tag.Cast(Ability.IncreaseGatherQualityRandomOnce);
+                //    await Coroutine.Wait(2000, () => Core.Player.HasAura(1262));
+                //    await Wait();
+                //}
 
                 if (!await tag.ResolveGatherItem()) return false;
 

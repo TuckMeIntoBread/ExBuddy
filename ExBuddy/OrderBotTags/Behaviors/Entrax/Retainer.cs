@@ -42,9 +42,14 @@ namespace ExBuddy.OrderBotTags.Behaviors
                     // Select retainer
                     await retainerList.SelectRetainerAndSkipDialog(index);
                     await Coroutine.Wait(5000, () => SelectString.IsOpen);
+                    if (!SelectString.IsOpen)
+                    {
+                        Log("Something went wrong when checking Retainer n° " + (index + 1) + ", its contract might be suspended !");
+                        break;
+                    }
                     string ventureLine = SelectString.Lines()[5];
                     Log("Venture Status : " + ventureLine);
-                    if (ventureLine.EndsWith("(Complete)") || ventureLine.EndsWith("Unternehmung einsehen") || ventureLine.EndsWith("tâche terminée") || ventureLine.EndsWith("[完了]") || ventureLine.EndsWith("[探险归来]"))
+                    if (ventureLine.EndsWith("(Complete)") || ventureLine.EndsWith("Unternehmung einsehen") || ventureLine.EndsWith("tâche terminée") || ventureLine.EndsWith("[完了]") || ventureLine.EndsWith("[探险归来]") || ventureLine.EndsWith("[结束]"))
                     {
                         Log("Venture Completed !");
                         // Click on the completed venture
@@ -68,6 +73,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
                     index++;
                 }
                 Log("No more Retainer to check");
+                await retainerList.Refresh(200);
                 await retainerList.CloseInstanceGently();
                 return isDone = true;
             }

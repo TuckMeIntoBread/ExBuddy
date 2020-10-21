@@ -98,19 +98,13 @@
 				result &= await StealthLocation.MoveToNoMount(UseMesh, tag.Radius, "Stealth Location", tag.MovementStopCallback);
 			}
 
-#if RB_CN
-			if (UnstealthAfter && Core.Player.HasAura((int)AbilityAura.Stealth))
+			if (UnstealthAfter && Core.Player.HasAura((int)AbilityAura.Sneak))
 			{
-				result &= tag.DoAbility(Ability.Stealth); // TODO: move into abilities map?
-            }
-#else
-            if (UnstealthAfter && Core.Player.HasAura((int)AbilityAura.Sneak))
-            {
-                result &= tag.DoAbility(Ability.Sneak); // TODO: move into abilities map?
-            }
-#endif
+				result &= tag.DoAbility(Ability.Sneak); // TODO: move into abilities map?
+			}
 
-            return result;
+
+			return result;
 		}
 
 		public override async Task<bool> MoveToLocation(ExFishTag tag)
@@ -134,19 +128,12 @@
 			if (result)
 			{
 				await Coroutine.Yield();
-#if RB_CN
-                if (!Core.Player.HasAura((int)AbilityAura.Stealth))
+				if (!Core.Player.HasAura((int)AbilityAura.Sneak))
 				{
-					tag.DoAbility(Ability.Stealth);
+					tag.DoAbility(Ability.Sneak);
 				}
-#else
-                if (!Core.Player.HasAura((int)AbilityAura.Sneak))
-                {
-                    tag.DoAbility(Ability.Sneak);
-                }
-#endif
 
-                result = await Location.MoveToNoMount(UseMesh, tag.Radius, tag.Name, tag.MovementStopCallback);
+				result = await Location.MoveToNoMount(UseMesh, tag.Radius, tag.Name, tag.MovementStopCallback);
 			}
 
 			return result;

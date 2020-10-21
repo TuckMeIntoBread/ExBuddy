@@ -159,7 +159,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
             {
                 Logger.Error(Localization.Localization.ExTurnInCollectable_TurnInError);
                 Blacklist.Add(
-                    (uint) item.Pointer.ToInt64(),
+                    (uint)item.Pointer.ToInt64(),
                     BlacklistFlags.Loot,
                     TimeSpan.FromMinutes(3),
                     Localization.Localization.ExTurnInCollectable_TurnInBlackList);
@@ -353,22 +353,32 @@ namespace ExBuddy.OrderBotTags.Behaviors
                     return true;
                 }
 
-                if (purchaseItemInfo.Index == (int) ShopItem.OnHighOrchestrionRoll && Location != Locations.RhalgrsReach ||
-                    purchaseItemInfo.Index >= (int) ShopItem.MoonbeamSilk && purchaseItemInfo.Index <= (int) ShopItem.RaziqcoatHq && Location != Locations.RhalgrsReach ||
-                    purchaseItemInfo.Index == (int) ShopItem.GardenGravel && Location != Locations.RhalgrsReach ||
-                    purchaseItemInfo.Index == (int) ShopItem.SongsofSaltandSufferingOrchestrionRoll && Location != Locations.RhalgrsReach)
+#if RB_CN
+                if (purchaseItemInfo.Index == (int)ShopItem.OnHighOrchestrionRoll && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow50 && Location != Locations.RhalgrsReach ||
+                    purchaseItemInfo.Index >= (int)ShopItem.MoonbeamSilk && purchaseItemInfo.Index <= (int)ShopItem.RaziqcoatHq && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow58 && Location != Locations.RhalgrsReach ||
+                    purchaseItemInfo.Index >= (int)ShopItem.GardenGravel && purchaseItemInfo.Index <= (int)ShopItem.SongsofSaltandSufferingOrchestrionRoll && purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType == ShopType.Yellow50 && Location != Locations.RhalgrsReach)
                 {
                     Logger.Warn(Localization.Localization.ExTurnInCollectable_FailedPurchaseGorRhalgrsReach, purchaseItemData.EnglishName);
                     continue;
                 }
+#else
+                if (purchaseItemInfo.Index == (int)ShopItem.OnHighOrchestrionRoll && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow50 && Location != Locations.RhalgrsReach ||
+                    purchaseItemInfo.Index >= (int)ShopItem.MoonbeamSilk && purchaseItemInfo.Index <= (int)ShopItem.RaziqcoatHq && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow50 && Location != Locations.RhalgrsReach ||
+                    purchaseItemInfo.Index >= (int)ShopItem.GardenGravel && purchaseItemInfo.Index <= (int)ShopItem.SongsofSaltandSufferingOrchestrionRoll && purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType == ShopType.Yellow50 && Location != Locations.RhalgrsReach ||
+                    purchaseItemInfo.Index >= (int)ShopItem.SmallAnglersCanvas && purchaseItemInfo.Index <= (int)ShopItem.ExtraAnglersCanvas && purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType == ShopType.Yellow70 && Location < Locations.RhalgrsReach)
+                {
+                    Logger.Warn(Localization.Localization.ExTurnInCollectable_FailedPurchaseGorRhalgrsReach, purchaseItemData.EnglishName);
+                    continue;
+                }
+#endif
 
                 ticks = 0;
                 while (SelectIconString.IsOpen && ticks++ < 5 && Behaviors.ShouldContinue)
                 {
-                    SelectIconString.ClickSlot((uint) purchaseItemInfo.ShopJob);
+                    SelectIconString.ClickSlot((uint)purchaseItemInfo.ShopJob);
                     await Coroutine.Wait(1000, () => SelectString.IsOpen);
 
-                    SelectString.ClickSlot((purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType > ShopType.Yellow61) ? (uint) purchaseItemInfo.ShopType - 1 : (uint) purchaseItemInfo.ShopType);
+                    SelectString.ClickSlot((purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType > ShopType.Yellow61) ? (uint)purchaseItemInfo.ShopType - 1 : (uint)purchaseItemInfo.ShopType);
 
                     await shopExchangeCurrency.Refresh(5000);
                 }
@@ -391,16 +401,32 @@ namespace ExBuddy.OrderBotTags.Behaviors
                        ) >= purchaseItemInfo.Cost &&
                        Behaviors.ShouldContinue)
                 {
-                    var qtyLeftToBuy = purchaseItem.MaxCount - (int) purchaseItemData.ItemCount();
+                    var qtyLeftToBuy = purchaseItem.MaxCount - (int)purchaseItemData.ItemCount();
                     var qtyBuyable = scripsLeft / purchaseItemInfo.Cost;
                     var qtyToBuy = Math.Min(99, Math.Min(qtyLeftToBuy, qtyBuyable));
 
+#if RB_CN
                     var indexPurchaseItem = (Location != Locations.Idyllshire && Location != Locations.RhalgrsReach && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow58 &&
-                         purchaseItemInfo.Index >= (int) ShopItem.MoonbeamSilk - 200)
+                         purchaseItemInfo.Index >= (int)ShopItem.MoonbeamSilk - 200)
                             ? purchaseItemInfo.Index - 12
                             : purchaseItemInfo.Index;
+#else
+                    var indexPurchaseItem = (Location != Locations.Idyllshire && Location != Locations.RhalgrsReach && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow50 &&
+                         purchaseItemInfo.Index >= (int)ShopItem.MoonbeamSilk)
+                            ? purchaseItemInfo.Index - 13
+                            : (Location != Locations.RhalgrsReach && purchaseItemInfo.ShopJob == ShopJob.Crafter && purchaseItemInfo.ShopType == ShopType.Yellow50 &&
+                         purchaseItemInfo.Index >= (int)ShopItem.OnHighOrchestrionRoll && purchaseItemInfo.Index <= (int)ShopItem.CarbonFiberHq)
+                         ? purchaseItemInfo.Index - 1
+                         : (Location != Locations.RhalgrsReach && purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType == ShopType.Yellow50 &&
+                         purchaseItemInfo.Index >= (int)ShopItem.GardenGravel - 100)
+                         ? purchaseItemInfo.Index - 2
+                         : (Location > Locations.RhalgrsReach && purchaseItemInfo.ShopJob == ShopJob.Gatherer && purchaseItemInfo.ShopType == ShopType.Yellow70 &&
+                         purchaseItemInfo.Index >= (int)ShopItem.SmallAnglersCanvas - 500)
+                         ? purchaseItemInfo.Index - 4
+                         : purchaseItemInfo.Index;
+#endif
 
-                    if (!await shopExchangeCurrency.PurchaseItem(indexPurchaseItem, (uint) qtyToBuy, 20))
+                    if (!await shopExchangeCurrency.PurchaseItem(indexPurchaseItem, (uint)qtyToBuy, 20))
                     {
                         Logger.Error(Localization.Localization.ExTurnInCollectable_PurchaseTimeout, purchaseItemData.EnglishName);
                         await shopExchangeCurrency.CloseInstance();
@@ -482,7 +508,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
             var classIndex = uint.MaxValue;
             if (item.Item.RepairClass > 0 && item.Item.EquipmentCatagory != ItemUiCategory.Seafood)
             {
-                classIndex = MasterPieceSupply.GetClassIndex((ClassJobType) item.Item.RepairClass);
+                classIndex = MasterPieceSupply.GetClassIndex((ClassJobType)item.Item.RepairClass);
             }
             else
             {
@@ -542,7 +568,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
                     break;
 
                 default:
-                    itemLevel = itemLevel < 120 ? (byte) 0 : (byte) ((itemLevel - 121) / 3);
+                    itemLevel = itemLevel < 120 ? (byte)0 : (byte)((itemLevel - 121) / 3);
                     break;
             }
 
@@ -552,11 +578,11 @@ namespace ExBuddy.OrderBotTags.Behaviors
             {
                 if (itemLevel >= 10)
                 {
-                    indexOffset = (8 + Math.Abs((int) classIndex - 10) * 2);
+                    indexOffset = (8 + Math.Abs((int)classIndex - 10) * 2);
                 }
                 else
                 {
-                    indexOffset = 62 + Math.Abs((int) classIndex - 10) * 6;
+                    indexOffset = 62 + Math.Abs((int)classIndex - 10) * 6;
                     indexOffset += Math.Abs(itemLevel - 10) / 2;
                 }
             }
@@ -564,16 +590,16 @@ namespace ExBuddy.OrderBotTags.Behaviors
             {
                 if (itemLevel >= 10)
                 {
-                    indexOffset = Math.Abs((int) classIndex - 7);
+                    indexOffset = Math.Abs((int)classIndex - 7);
                 }
                 else
                 {
-                    indexOffset = 14 + Math.Abs((int) classIndex - 7) * 6;
+                    indexOffset = 14 + Math.Abs((int)classIndex - 7) * 6;
                     indexOffset += Math.Abs(itemLevel - 10) / 2;
                 }
             }
 
-            index = (uint) indexOffset;
+            index = (uint)indexOffset;
 
             return false;
         }
@@ -587,7 +613,7 @@ namespace ExBuddy.OrderBotTags.Behaviors
 
             var slots =
                 InventoryManager.FilledInventoryAndArmory.Where(
-                    i => !Blacklist.Contains((uint) i.Pointer.ToInt64(), BlacklistFlags.Loot)).ToArray();
+                    i => !Blacklist.Contains((uint)i.Pointer.ToInt64(), BlacklistFlags.Loot)).ToArray();
 
             var blackListDictionnary = new Dictionary<string, uint>
             {
@@ -749,102 +775,106 @@ namespace ExBuddy.OrderBotTags.Behaviors
             {
                 return false;
             }
-            
-			// check cost
+
+            // check cost
             switch (info.ShopJob)
             {
                 case ShopJob.Crafter:
-                {
-                    switch (info.ShopType)
                     {
-                        case ShopType.Yellow50:
-                            if (Memory.Scrips.YellowCrafter < info.Cost)
-                            {
-                                return false;
-                            }
+                        switch (info.ShopType)
+                        {
+                            case ShopType.Yellow50:
+                                if (Memory.Scrips.YellowCrafter < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.Yellow58:
-                            if (Memory.Scrips.YellowCrafter < info.Cost)
-                            {
-                                return false;
-                            }
+#if RB_CN
+                            case ShopType.Yellow58:
+                                if (Memory.Scrips.YellowCrafter < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
+#endif
 
-                        case ShopType.Yellow61:
-                            if (Memory.Scrips.YellowCrafter < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.Yellow61:
+                                if (Memory.Scrips.YellowCrafter < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.Yellow70:
-                            if (Memory.Scrips.YellowCrafter < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.Yellow70:
+                                if (Memory.Scrips.YellowCrafter < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.White80:
-                            if (Memory.Scrips.WhiteCrafter < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.White80:
+                                if (Memory.Scrips.WhiteCrafter < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
+                        }
                     }
-                }
                     break;
 
                 case ShopJob.Gatherer:
-                {
-                    switch (info.ShopType)
                     {
-                        case ShopType.Yellow50:
-                            if (Memory.Scrips.YellowGatherer < info.Cost)
-                            {
-                                return false;
-                            }
+                        switch (info.ShopType)
+                        {
+                            case ShopType.Yellow50:
+                                if (Memory.Scrips.YellowGatherer < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.Yellow58:
-                            if (Memory.Scrips.YellowGatherer < info.Cost)
-                            {
-                                return false;
-                            }
+#if RB_CN
+                            case ShopType.Yellow58:
+                                if (Memory.Scrips.YellowGatherer < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
+#endif
 
-                        case ShopType.Yellow61:
-                            if (Memory.Scrips.YellowGatherer < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.Yellow61:
+                                if (Memory.Scrips.YellowGatherer < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.Yellow70:
-                            if (Memory.Scrips.YellowGatherer < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.Yellow70:
+                                if (Memory.Scrips.YellowGatherer < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
 
-                        case ShopType.White80:
-                            if (Memory.Scrips.WhiteGatherer < info.Cost)
-                            {
-                                return false;
-                            }
+                            case ShopType.White80:
+                                if (Memory.Scrips.WhiteGatherer < info.Cost)
+                                {
+                                    return false;
+                                }
 
-                            break;
+                                break;
+                        }
                     }
-                }
                     break;
             }
             return true;
