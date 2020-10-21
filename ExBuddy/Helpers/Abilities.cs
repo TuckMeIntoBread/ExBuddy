@@ -1,4 +1,4 @@
-﻿namespace ExBuddy.Helpers
+namespace ExBuddy.Helpers
 {
     using ff14bot;
     using ff14bot.Enums;

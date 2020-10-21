@@ -1,4 +1,4 @@
-﻿namespace ExBuddy.OrderBotTags.Gather
+namespace ExBuddy.OrderBotTags.Gather
 {
     using Attributes;
     using Behaviors;
