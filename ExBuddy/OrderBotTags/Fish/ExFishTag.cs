@@ -1118,17 +1118,6 @@ namespace ExBuddy.OrderBotTags.Fish
 			{
 				ExProfileBehavior.Me.SetFacing(FishSpots.Current.Heading + (float)i);
 			}
-
-			if (!Actions.CanCast(Ability.Cast))
-			{
-				float facing = Core.Me.Heading;
-				float maxFacing = (float) (facing + (2 * Math.PI));
-				while (facing < maxFacing && !await Coroutine.Wait(25,() => Actions.CanCast(Ability.Cast)))
-				{
-					facing += 0.15f;
-					ExProfileBehavior.Me.SetFacing(facing);
-				}
-			}
 		}
 
 		protected virtual void ChangeFishSpot()
